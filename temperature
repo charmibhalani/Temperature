@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Campus Control</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: #1e293b;
+      --accent-neon: #38bdf8;
+      --text-main: #f8fafc;
+      --text-dim: #94a3b8;
+      --danger: #f43f5e;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    
+    body { 
+      font-family: 'Outfit', sans-serif; 
+      background-color: var(--bg-dark); 
+      color: var(--text-main); 
+      margin: 0; 
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container { width: 100%; max-width: 500px; }
+
+    header { margin-bottom: 30px; text-align: left; width: 100%; }
+    
+    #live-date { color: var(--accent-neon); font-size: 0.9rem; font-weight: 600; }
+    #live-clock { font-size: 2.5rem; font-weight: 400; margin: 5px 0; letter-spacing: 2px; }
+
+    .hero-stat {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 30px;
+      padding: 30px;
+      margin-bottom: 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .temp-display { font-size: 3.5rem; font-weight: 600; margin: 10px 0; }
+    
+    .progress-container {
+      width: 100%;
+      height: 6px;
+      background: #334155;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    #meter-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-neon);
+      box-shadow: 0 0 15px var(--accent-neon);
+      transition: width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .device-list { display: flex; flex-direction: column; gap: 15px; }
+
+    .control-row {
+      background: var(--card-bg);
+      border-radius: 20px;
+      padding: 18px 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.3s all ease;
+      border: 1px solid transparent;
+      cursor: pointer;
+    }
+
+    .control-row.active {
+      border-color: var(--accent-neon);
+      background: rgba(56, 189, 248, 0.1);
+    }
+
+    .info-box { display: flex; align-items: center; gap: 15px; }
+    .icon-circle {
+      width: 45px;
+      height: 45px;
+      background: #334155;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .active .icon-circle { background: var(--accent-neon); color: var(--bg-dark); }
+
+    .label-text strong { display: block; font-size: 1.1rem; }
+    .label-text small { color: var(--text-dim); }
+
+    .switch {
+      width: 44px;
+      height: 24px;
+      background: #475569;
+      border-radius: 20px;
+      position: relative;
+      transition: 0.3s;
+    }
+    .active .switch { background: var(--accent-neon); }
+    .switch::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      background: white;
+      border-radius: 50%;
+      top: 3px;
+      left: 3px;
+      transition: 0.3s;
+    }
+    .active .switch::after { left: 23px; }
+
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div id="live-date">...</div>
+    <div id="live-clock">00:00:00</div>
+  </header>
+
+  <div class="hero-stat">
+    <span style="color: var(--text-dim); text-transform: uppercase; font-size: 0.8rem;">Current Climate</span>
+    <div class="temp-display" id="temp-val">--°C</div>
+    <div class="progress-container">
+      <div id="meter-fill"></div>
+    </div>
+  </div>
+
+  <div class="device-list">
+    <div class="control-row" id="led1">
+      <div class="info-box">
+        <div class="icon-circle">🏫</div>
+        <div class="label-text">
+          <strong>Classroom</strong>
+          <small id="s-led1">Standby</small>
+        </div>
+      </div>
+      <div class="switch"></div>
+    </div>
+
+    <div class="control-row" id="led2">
+      <div class="info-box">
+        <div class="icon-circle">💼</div>
+        <div class="label-text">
+          <strong>Admin Office</strong>
+          <small id="s-led2">Standby</small>
+        </div>
+      </div>
+      <div class="switch"></div>
+    </div>
+
+    <div class="control-row" id="led3">
+      <div class="info-box">
+        <div class="icon-circle">🎓</div>
+        <div class="label-text">
+          <strong>Placement Cell</strong>
+          <small id="s-led3">Standby</small>
+        </div>
+      </div>
+      <div class="switch"></div>
+    </div>
+
+    <div class="control-row" id="led4">
+      <div class="info-box">
+        <div class="icon-circle">🤝</div>
+        <div class="label-text">
+          <strong>Conference Room</strong>
+          <small id="s-led4">Standby</small>
+        </div>
+      </div>
+      <div class="switch"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+  import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCyKw2xiNWP5DBtKlz5E0Sjxt4c_LuHbwM",
+    authDomain: "smart-home-7d4e1.firebaseapp.com",
+    databaseURL: "https://smart-home-7d4e1-default-rtdb.firebaseio.com",
+    projectId: "smart-home-7d4e1",
+    storageBucket: "smart-home-7d4e1.firebasestorage.app",
+    messagingSenderId: "932570610732",
+    appId: "1:932570610732:web:54b94bfe87d13c2cc86589"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  setInterval(() => {
+    const d = new Date();
+    document.getElementById('live-clock').innerText = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('live-date').innerText = d.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
+  }, 1000);
+
+  onValue(ref(db, "/sensor/temp"), (snap) => {
+    const t = snap.val() || 0;
+    document.getElementById('temp-val').innerText = t + "°";
+    document.getElementById('meter-fill').style.width = Math.min((t/50)*100, 100) + "%";
+  });
+
+  const devices = ["led1", "led2", "led3", "led4"];
+
+  function syncLED(id, path) {
+    const el = document.getElementById(id);
+    onValue(ref(db, path), (snap) => {
+      const active = snap.val();
+      if(active) {
+        el.classList.add("active");
+        document.getElementById("s-"+id).innerText = "System Active";
+      } else {
+        el.classList.remove("active");
+        document.getElementById("s-"+id).innerText = "Power Off";
+      }
+    });
+
+    el.onclick = async () => {
+      const snap = await get(ref(db, path));
+      const newState = !snap.val();
+      await set(ref(db, path), newState);
+      if (newState === true) {
+        devices.forEach(async (dev) => {
+          if (dev !== id) await set(ref(db, "/leds/" + dev), false);
+        });
+      }
+    };
+  }
+
+  devices.forEach(id => syncLED(id, "/leds/" + id));
+</script>
+</body>
+</html>
